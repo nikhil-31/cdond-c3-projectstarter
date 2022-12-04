@@ -153,6 +153,7 @@ jobs:
               --tags project=my-backend \
               --stack-name backend-${CIRCLE_WORKFLOW_ID:0:5} \
               --parameter-overrides ID="{CIRCLE_WORKFLOW_ID:0:5}"  
+              --region us-east-1
       - run:
           name: Ensure front-end infrastructure exist
           command: |
@@ -161,6 +162,7 @@ jobs:
               --tags project=my-frontend \
               --stack-name frontend-{CIRCLE_WORKFLOW_ID:0:5} \
               --parameter-overrides ID="{CIRCLE_WORKFLOW_ID:0:5}"  
+              --region us-east-1
       - run:
           name: Add back-end ip to ansible inventory
           command: |
