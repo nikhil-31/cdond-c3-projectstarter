@@ -46,6 +46,8 @@ jobs:
           command: |
             pwd
             ls
+            cd frontend
+            ls
             npm run build
       - save_cache:
           paths: [frontend/node_modules]
@@ -63,6 +65,8 @@ jobs:
           name: Back-end build
           command: |
             pwd
+            ls
+            cd frontend 
             ls
             npm run build
       - save_cache:
