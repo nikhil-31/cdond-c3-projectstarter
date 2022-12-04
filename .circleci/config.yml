@@ -150,17 +150,17 @@ jobs:
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
-              #--tags project=my-backend \
-              # --stack-name "backend-{CIRCLE_WORKFLOW_ID:0:7}" \
-              # --parameter-overrides ID="{CIRCLE_WORKFLOW_ID:0:7}"  
+              # --tags project=my-backend \
+              # --stack-name backend-${CIRCLE_WORKFLOW_ID:0:5} \
+              # --parameter-overrides ID="{CIRCLE_WORKFLOW_ID:0:5}"  
       - run:
           name: Ensure front-end infrastructure exist
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
-              #--tags project=my-frontend \
-              # --stack-name "frontend-{CIRCLE_WORKFLOW_ID:0:7}" \
-              # --parameter-overrides ID="{CIRCLE_WORKFLOW_ID:0:7}"  
+              # --tags project=my-frontend \
+              # --stack-name frontend-{CIRCLE_WORKFLOW_ID:0:5} \
+              # --parameter-overrides ID="{CIRCLE_WORKFLOW_ID:0:5}"  
       - run:
           name: Add back-end ip to ansible inventory
           command: |
@@ -316,18 +316,19 @@ jobs:
 workflows:
   default:
     jobs:
-      - build-frontend
-      - build-backend
-      - test-frontend:
-          requires: [build-frontend]
-      - test-backend:
-          requires: [build-backend]
-      - scan-backend:
-          requires: [build-backend]
-      - scan-frontend:
-          requires: [build-frontend]
+      # TODO - uncomment all
+      # - build-frontend
+      # - build-backend
+      # - test-frontend:
+          # requires: [build-frontend]
+      # - test-backend:
+          # requires: [build-backend]
+      # - scan-backend:
+          # requires: [build-backend]
+      # - scan-frontend:
+          # requires: [build-frontend]
       - deploy-infrastructure:
-          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          # requires: [test-frontend, test-backend, scan-frontend, scan-backend]
           filters:
             branches:
               only: [master]
