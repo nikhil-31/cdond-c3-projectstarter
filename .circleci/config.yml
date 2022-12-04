@@ -149,6 +149,7 @@ jobs:
           name: Ensure back-end infrastructure exists
           command: |
             ls -lah
+            ls
             pwd
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
@@ -160,6 +161,7 @@ jobs:
           name: Ensure front-end infrastructure exist
           command: |
             ls -lah
+            ls
             pwd
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
