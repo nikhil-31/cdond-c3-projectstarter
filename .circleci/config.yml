@@ -58,7 +58,7 @@ jobs:
       - restore_cache:
           keys: [backend-builder]
       - run:
-          name: Backend build
+          name: Back-end build
           command: |
             cd backend/
             npm i
