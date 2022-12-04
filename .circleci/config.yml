@@ -51,7 +51,6 @@ jobs:
           key: frontend-build
 
   build-backend:
-    working_directory: ~/backend
     docker:
       - image: circleci/node:13.8.0
     steps:
@@ -114,6 +113,7 @@ jobs:
           name: Scanning frontend
           command: |
             cd frontend/
+            npm audit fix --audit-level=critical --force
             npm audit --audit-level=critical
       # Checkout code from git
       # Restore from cache
@@ -131,6 +131,7 @@ jobs:
           name: Scanning backend
           command: |
             cd backend/
+            npm audit fix --audit-level=critical --force
             npm audit --audit-level=critical
       # Checkout code from git
       # Restore from cache
