@@ -34,7 +34,7 @@ commands:
             
 jobs:
   build-frontend:
-    working_directory: ~/cdond-c3-projectstarter/frontend
+    working_directory: ~/project/frontend
     docker:
       - image: circleci/node:13.8.0
     steps:
@@ -50,7 +50,7 @@ jobs:
           key: frontend-build
 
   build-backend:
-    working_directory: ~/cdond-c3-projectstarter/backend
+    working_directory: ~/project/backend
     docker:
       - image: circleci/node:13.8.0
     steps:
