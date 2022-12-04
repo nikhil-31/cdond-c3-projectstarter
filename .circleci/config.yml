@@ -160,7 +160,7 @@ jobs:
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
               --tags project=my-frontend \
-              --stack-name frontend-{CIRCLE_WORKFLOW_ID:0:5} \
+              --stack-name front-${CIRCLE_WORKFLOW_ID:0:5} \
               --parameter-overrides ID="{CIRCLE_WORKFLOW_ID:0:5}"  \
               --region us-east-1
       - run:
