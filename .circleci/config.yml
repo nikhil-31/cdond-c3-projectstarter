@@ -148,9 +148,6 @@ jobs:
       - run:
           name: Ensure back-end infrastructure exists
           command: |
-            ls -lah
-            ls
-            pwd
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
               --tags project=my-backend \
@@ -160,9 +157,6 @@ jobs:
       - run:
           name: Ensure front-end infrastructure exist
           command: |
-            ls -lah
-            ls
-            pwd
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
               --tags project=my-frontend \
