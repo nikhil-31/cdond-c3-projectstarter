@@ -34,7 +34,6 @@ commands:
             
 jobs:
   build-frontend:
-    working_directory: ~/frontend
     docker:
       - image: circleci/node:13.8.0
     steps:
@@ -44,9 +43,8 @@ jobs:
       - run:
           name: Build front-end
           command: |
-            pwd
-            ls
             cd frontend
+            pwd
             ls
             npm run build
       - save_cache:
@@ -66,7 +64,7 @@ jobs:
           command: |
             pwd
             ls
-            cd frontend 
+            cd backend
             ls
             npm run build
       - save_cache:
