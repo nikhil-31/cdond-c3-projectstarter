@@ -196,11 +196,13 @@ jobs:
           at: ~/project/.circleci/ansible/
       - run:
           name: Install dependencies
+          working_directory: ./.circleci/ansible
           command: |
             # Install the dependencies for ansible
             apk add --update ansible
       - run:
           name: Configure server
+          working_directory: ./.circleci/ansible
           command: |
             ansible-playbook -i inventory.txt configure-server.yml
       # Here's where you will add some code to rollback on failure  
