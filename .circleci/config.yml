@@ -7,11 +7,10 @@ commands:
       # Add parameter here   
     steps:
       - run:
-          name: Destroy environments
+          name: Destroy environment
           when: on_fail
           command: |
-            # Your code here
-            exit 1
+            aws cloudformation delete-stack --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5}
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
@@ -154,18 +153,18 @@ jobs:
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
-              --tags project=my-backend \
-              --stack-name backend-${CIRCLE_WORKFLOW_ID:0:5} \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:5}"  \
+              --tags project=udapeople \
+              --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7} \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
               --region us-east-1
       - run:
           name: Ensure front-end infrastructure exist
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
-              --tags project=my-frontend \
-              --stack-name front-${CIRCLE_WORKFLOW_ID:0:5} \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:5}"  \
+              --tags project=udapeople \
+              --stack-name udapeople-front-${CIRCLE_WORKFLOW_ID:0:7} \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
               --region us-east-1
       - run:
           name: Add back-end ip to ansible inventory
@@ -173,32 +172,39 @@ jobs:
             echo "[all]" > inventory
             aws ec2 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=project,Values=udapeople" \
               --output text >> inventory
       - persist_to_workspace:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
-      # Here's where you will add some code to rollback on failure      
+      # Here's where you will add some code to rollback on failure
+      - destroy-environment
 
   configure-infrastructure:
     docker:
-      - image: python:3.7-alpine3.11
       # Docker image here that supports Ansible
+      - image: python:3.7-alpine3.11
     steps:
       # Checkout code from git
       # Add ssh keys with fingerprint
       # attach workspace
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["34:b8:83:88:95:73:32:a8:45:a2:fd:c0:2d:e5:95:a5"]
+      - attach_workspace:
+          at: ~/project/.circleci/ansible/
       - run:
           name: Install dependencies
           command: |
-            # Your code here
-            exit 1
+            # Install the dependencies for ansible
+            apk add --update ansible
       - run:
           name: Configure server
           command: |
-            # Your code here
-            exit 1
-      # Here's where you will add some code to rollback on failure      
+            ansible-playbook -i inventory.txt configure-server.yml
+      # Here's where you will add some code to rollback on failure  
+      - destroy-environment    
 
   run-migrations:
     docker:
