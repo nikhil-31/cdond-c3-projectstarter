@@ -172,12 +172,12 @@ jobs:
             echo "[all]" > inventory
             aws ec2 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters "Name=project,Values=udapeople" \
+              --filters "Name=udapeople,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --output text >> inventory
       - persist_to_workspace:
           root: ~/
           paths:
-            - project/.circleci/ansible/inventory.txt
+            - project/.circleci/ansible/inventory
       # Here's where you will add some code to rollback on failure
       - destroy-environment
 
