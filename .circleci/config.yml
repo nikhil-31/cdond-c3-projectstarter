@@ -168,6 +168,7 @@ jobs:
               --region us-east-1
       - run:
           name: Add back-end ip to ansible inventory
+          working_directory: ./.circleci/ansible
           command: |
             echo "[all]" > inventory
             aws ec2 describe-instances \
@@ -177,7 +178,7 @@ jobs:
       - persist_to_workspace:
           root: ~/
           paths:
-            - project/.circleci/ansible/inventory
+            - .circleci/ansible/inventory
       # Here's where you will add some code to rollback on failure
       - destroy-environment
 
