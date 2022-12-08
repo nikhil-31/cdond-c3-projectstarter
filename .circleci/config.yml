@@ -219,16 +219,41 @@ jobs:
       # Docker image here that supports NodeJS
     steps:
       # Checkout code from git
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Install AWS CLI dependencies
+          working_directory: /tmp
+          command: |
+            sudo apt-get update && sudo apt-get install -yy less
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
       - run:
           name: Run migrations
+          working_directory: ./backend
           command: |
-            # Your code here
-            exit 1
+            npm run migrations > migration_status
       - run:
-          name: Send migration results to memstash
+          name: Send migration results to rxdb
           command: |
             # Your code here
-            exit 1
+            if grep -q "has been executed successfully" migration_status
+            then
+              echo "DB migration was successful, will update memstash..."
+              curl --request PUT 'https://api.kvstore.io/collections/new_collection/items/my-key' \
+                --header 'kvstoreio_api_key: 48a31fe381b91e3cc04eacfe2c36cc37c5c6de0fa665f912b88c4392dfcbffd4' \
+                --header 'Content-Type: text/plain' \
+                --data-raw 'success'
+            else
+              echo "DB migration failed, please verify setup! Probably the database already exists. Verify setup!"
+              curl --request PUT 'https://api.kvstore.io/collections/new_collection/items/my-key' \
+                --header 'kvstoreio_api_key: 48a31fe381b91e3cc04eacfe2c36cc37c5c6de0fa665f912b88c4392dfcbffd4' \
+                --header 'Content-Type: text/plain' \
+                --data-raw 'failure'
+            fi
+            echo "WorkflowID=${CIRCLE_WORKFLOW_ID:0:7}"
      # Here's where you will add some code to rollback on failure      
 
   deploy-frontend:
