@@ -232,8 +232,9 @@ jobs:
             sudo ./aws/install
       - run:
           name: Run migrations
-          working_directory: ./backend
           command: |
+            cd backend/
+            npm i
             npm run build
             npm run migrations > migration_status
       - run:
