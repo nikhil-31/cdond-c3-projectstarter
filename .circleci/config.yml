@@ -201,9 +201,6 @@ jobs:
   configure-infrastructure:
     executor: python
     steps:
-      # Checkout code from git
-      # Add ssh keys with fingerprint
-      # attach workspace
       - checkout
       - add_ssh_keys:
           fingerprints: ["34:b8:83:88:95:73:32:a8:45:a2:fd:c0:2d:e5:95:a5"]
@@ -213,7 +210,6 @@ jobs:
           name: Install dependencies
           working_directory: ./.circleci/ansible
           command: |
-            # Install the dependencies for ansible
             apk add --update ansible
             ansible --version
       - run:
@@ -331,10 +327,8 @@ jobs:
           name: Install dependencies
           working_directory: /tmp
           command: |
-            apk add --update ansible curl rsync openssh nodejs npm
+            apk add --update ansible
             ansible --version
-            pip install awscli
-            aws --version
       - run:
           name: Deploy backend
           working_directory: ./.circleci/ansible
@@ -365,14 +359,14 @@ jobs:
           name: Backend smoke test
           working_directory: ./backend
           command: |
-            # BACKEND_IP=$(aws ec2 describe-instances \
-            #   --query 'Reservations[*].Instances[*].PublicIpAddress' \
-            #   --filters "Name=tag:udapeople,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-            #   --output text)
             BACKEND_IP=$(aws ec2 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters "Name=tag:udapeople,Values=backend-eafbc73" \
+              --filters "Name=tag:udapeople,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --output text)
+            # BACKEND_IP=$(aws ec2 describe-instances \
+            #   --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            #   --filters "Name=tag:udapeople,Values=backend-eafbc73" \
+            #   --output text)
             echo "${BACKEND_IP}"
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
@@ -386,8 +380,8 @@ jobs:
           name: Frontend smoke test.
           command: |
             # your code here
-            # URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/index.html"
-            URL="http://udapeople-eafbc73.s3-website-us-east-1.amazonaws.com/index.html"
+            URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/index.html"
+            # URL="http://udapeople-eafbc73.s3-website-us-east-1.amazonaws.com/index.html"
             if curl -s ${URL} | grep "Welcome"
             then
             # Change this to 0 after the job fails
