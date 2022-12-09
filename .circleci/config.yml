@@ -323,6 +323,8 @@ jobs:
           fingerprints: ["34:b8:83:88:95:73:32:a8:45:a2:fd:c0:2d:e5:95:a5"]
       - attach_workspace:
           at: .
+      - restore_cache:
+          keys: [backend-builder]
       - run:
           name: Install dependencies
           working_directory: ./.circleci/ansible
@@ -335,6 +337,8 @@ jobs:
           name: Deploy backend
           working_directory: ./.circleci/ansible
           command: |
+            echo inventory > "[all]"
+            echo inventory >> "54.89.173.21"
             cat inventory
             ansible-playbook -i inventory deploy-backend.yml -vv
       # Here's where you will add some code to rollback on failure  
@@ -451,19 +455,19 @@ workflows:
           # requires: [build-backend]
       # - scan-frontend:
           # requires: [build-frontend]
-      - deploy-infrastructure:
+      # - deploy-infrastructure:
           # requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-          filters:
-            branches:
-              only: [master]
-      - configure-infrastructure:
-          requires: [deploy-infrastructure]
-      - run-migrations:
-          requires: [configure-infrastructure]
-      - deploy-frontend:
-          requires: [run-migrations]
-      - deploy-backend:
-          requires: [run-migrations]
+          # filters:
+            # branches:
+              # only: [master]
+      # - configure-infrastructure:
+          # requires: [deploy-infrastructure]
+      # - run-migrations:
+          # requires: [configure-infrastructure]
+      - deploy-frontend
+          # requires: [run-migrations]
+      - deploy-backend
+          # requires: [run-migrations]
       - smoke-test:
           requires: [deploy-backend, deploy-frontend]
       - cloudfront-update:
