@@ -352,17 +352,18 @@ jobs:
     executor: aws
     steps:
       - checkout
-      - attach_workspace:
-          at: .
       - run:
           name: Install dependencies
           working_directory: /tmp
           command: |
+            yum install -y tar gzip
             yum install curl
             # apk add --update curl 
             # pip install awscliv2
             # alias aws='awsv2'
             # aws --version
+      - attach_workspace:
+          at: .
       - run:
           name: Get backend url
           working_directory: ./backend
