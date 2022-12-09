@@ -227,7 +227,6 @@ jobs:
           keys: [backend-builder]
       - run:
           name: Install AWS CLI dependencies
-          working_directory: /tmp
           command: |
             sudo apt-get update && sudo apt-get install -yy less
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
@@ -238,6 +237,7 @@ jobs:
           command: |
             cd backend/
             npm run migrations > migration_status
+            cat migration_status
       - run:
           name: Send migration results to rxdb
           command: |
