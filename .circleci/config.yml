@@ -279,17 +279,17 @@ jobs:
                 --data-raw 'failure'
             fi
             echo "WorkflowID=${CIRCLE_WORKFLOW_ID:0:7}"
-     # Here's where you will add some code to rollback on failure      
       - destroy-environment:
           id: ${CIRCLE_WORKFLOW_ID:0:7}
   
   deploy-frontend:
     executor: node
     steps:
-      # Checkout code from git
       - checkout
       - attach_workspace:
           at: .
+      - restore_cache:
+          keys: [frontend-build]
       - run:
           name: Install dependencies
           working_directory: /tmp
@@ -305,7 +305,7 @@ jobs:
           command: |
             BACKEND_IP=$(aws ec2 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters "Name=tag:udapeople,Values=backend-0716ec7" \
+              --filters "Name=tag:udapeople,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --output text)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
@@ -318,18 +318,13 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - frontend/dist
-      # Here's where you will add some code to rollback on failure      
-      - destroy-environment:
-          id: ${CIRCLE_WORKFLOW_ID:0:7}    
+            - frontend/dist   
+      # - destroy-environment:
+          # id: ${CIRCLE_WORKFLOW_ID:0:7}    
   
   deploy-backend:
     executor: python
-      # Docker image here that supports Ansible
     steps:
-      # Checkout code from git
-      # Add ssh keys with fingerprint
-      # attach workspace
       - checkout
       - add_ssh_keys:
           fingerprints: ["34:b8:83:88:95:73:32:a8:45:a2:fd:c0:2d:e5:95:a5"]
@@ -350,8 +345,8 @@ jobs:
             cat inventory
             ansible-playbook -i inventory deploy-backend.yml -vv
       # Here's where you will add some code to rollback on failure  
-      - destroy-environment:
-          id: ${CIRCLE_WORKFLOW_ID:0:7}
+      # - destroy-environment:
+          # id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   smoke-test:
     executor: python
@@ -373,19 +368,32 @@ jobs:
           working_directory: ./backend
           command: |
             BACKEND_IP=$(aws ec2 describe-instances \
-              # --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --filters "Name=tag:udapeople,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --output text
+              --output text)
       - run:
           name: Backend smoke test.
           command: |
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
-            curl "$BACKEND_URL/api/status"
+            if curl "${API_URL}/api/status" | grep "ok"
+            then
+                return 0
+            else
+                return 1
+            fi
       - run:
           name: Frontend smoke test.
           command: |
             # your code here
+            URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/index.html"
+            if curl -s ${URL} | grep "Welcome"
+            then
+            # Change this to 0 after the job fails
+              return 1
+            else
+              return 1
+            fi
       # Here's where you will add some code to rollback on failure  
       - destroy-environment:
           id: ${CIRCLE_WORKFLOW_ID:0:7}
@@ -412,6 +420,7 @@ jobs:
               --tags project=udapeople
       - destroy-environment:
           id: ${CIRCLE_WORKFLOW_ID:0:7}
+  
   cleanup:
       executor: aws
       steps:
