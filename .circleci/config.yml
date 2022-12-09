@@ -46,8 +46,7 @@ commands:
             then
               cd ~/project/backend
               npm install
-              npm 
-              Add revert code here. You can find this in the Getting Started section.
+              npm run migration:revert
               exit 1
             fi
             
@@ -397,8 +396,8 @@ jobs:
               return 1
             fi
       # Here's where you will add some code to rollback on failure  
-      - destroy-environment:
-          id: ${CIRCLE_WORKFLOW_ID:0:7}
+      # - destroy-environment:
+          # id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   cloudfront-update:
     executor: aws
