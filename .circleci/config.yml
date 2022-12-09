@@ -14,14 +14,21 @@ executors:
 commands:
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
-    # parameters:
-      # Add parameter here   
+    parameters:
+      id:
+        type: string
     steps:
       - run:
-          name: Destroy environment
+          name: Destroy environment for backend cloudformation stack
           when: on_fail
           command: |
-            aws cloudformation delete-stack --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5}
+            aws cloudformation delete-stack --stack-name udapeople-backend-<< parameters.id >>
+      - run:
+          name: Destroy environment for frontend cloudformation stack and s3
+          when: on_fail
+          command: |
+            aws s3 rm s3://udapeople-<< parameters.id >> --recursive
+            aws cloudformation delete-stack --stack-name udapeople-frontend-<< parameters.id >>
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
@@ -188,7 +195,8 @@ jobs:
           paths:
             - .circleci/ansible/inventory
       # Here's where you will add some code to rollback on failure
-      - destroy-environment
+      - destroy-environment:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   configure-infrastructure:
     executor: python
@@ -217,7 +225,8 @@ jobs:
             cat inventory
             ansible-playbook -i inventory configure-server.yml
       # Here's where you will add some code to rollback on failure  
-      - destroy-environment    
+      - destroy-environment:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}   
 
   run-migrations:
     executor: node
@@ -271,7 +280,8 @@ jobs:
             fi
             echo "WorkflowID=${CIRCLE_WORKFLOW_ID:0:7}"
      # Here's where you will add some code to rollback on failure      
-
+      - destroy-environment:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
   deploy-frontend:
     executor: node
     steps:
@@ -307,7 +317,9 @@ jobs:
           paths:
             - frontend/dist
       # Here's where you will add some code to rollback on failure      
-                    
+      - destroy-environment:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}    
+  
   deploy-backend:
     executor: python
       # Docker image here that supports Ansible
@@ -335,6 +347,8 @@ jobs:
             cat inventory
             ansible-playbook -i inventory deploy-backend.yml -vv
       # Here's where you will add some code to rollback on failure  
+      - destroy-environment:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   smoke-test:
     executor: python
@@ -370,6 +384,8 @@ jobs:
           command: |
             # your code here
       # Here's where you will add some code to rollback on failure  
+      - destroy-environment:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   cloudfront-update:
     executor: aws
@@ -384,7 +400,8 @@ jobs:
           command: |
             # your code here
       # Here's where you will add some code to rollback on failure  
-
+      - destroy-environment:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
   cleanup:
       docker:
         # Docker image here
