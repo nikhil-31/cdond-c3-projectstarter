@@ -251,14 +251,12 @@ jobs:
                 --header 'kvstoreio_api_key: 48a31fe381b91e3cc04eacfe2c36cc37c5c6de0fa665f912b88c4392dfcbffd4' \
                 --header 'Content-Type: text/plain' \
                 --data-raw 'success'
-                -k
             else
               echo "DB migration failed, please verify setup! Probably the database already exists. Verify setup!"
               curl --request PUT 'https://api.kvstore.io/collections/new_collection/items/my-key' \
                 --header 'kvstoreio_api_key: 48a31fe381b91e3cc04eacfe2c36cc37c5c6de0fa665f912b88c4392dfcbffd4' \
                 --header 'Content-Type: text/plain' \
                 --data-raw 'failure'
-                -k
             fi
             echo "WorkflowID=${CIRCLE_WORKFLOW_ID:0:7}"
      # Here's where you will add some code to rollback on failure      
