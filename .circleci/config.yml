@@ -179,6 +179,10 @@ jobs:
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --filters "Name=tag:udapeople,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --output text >> inventory
+            aws ec2 describe-instances \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:udapeople,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --output text >> BACKENDIP
       - persist_to_workspace:
           root: .
           paths:
@@ -246,11 +250,18 @@ jobs:
             # Your code here
             if grep -q "has been executed successfully" migration_status
             then
-              echo "DB migration was successful, will update kvstore..."
+              echo "DB migration was successful."
               curl --request PUT 'https://api.kvstore.io/collections/new_collection/items/my-key' \
                 --header 'kvstoreio_api_key: 48a31fe381b91e3cc04eacfe2c36cc37c5c6de0fa665f912b88c4392dfcbffd4' \
                 --header 'Content-Type: text/plain' \
                 --data-raw 'success'
+            elif grep -q "No migrations are pending" migration_status
+            then
+              echo "No DB migrations needed."
+              curl --request PUT 'https://api.kvstore.io/collections/new_collection/items/my-key' \
+                --header 'kvstoreio_api_key: 48a31fe381b91e3cc04eacfe2c36cc37c5c6de0fa665f912b88c4392dfcbffd4' \
+                --header 'Content-Type: text/plain' \
+                --data-raw 'no_migrations_run'
             else
               echo "DB migration failed, please verify setup! Probably the database already exists. Verify setup!"
               curl --request PUT 'https://api.kvstore.io/collections/new_collection/items/my-key' \
@@ -262,24 +273,39 @@ jobs:
      # Here's where you will add some code to rollback on failure      
 
   deploy-frontend:
-    executor: aws
-      # Docker image here that supports AWS CLI
+    executor: node
     steps:
       # Checkout code from git
+      - checkout
+      - attach_workspace:
+          at: .
       - run:
           name: Install dependencies
           command: |
             # your code here
+            sudo apt-get update && sudo apt-get install -yy less
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
       - run:
           name: Get backend url
           command: |
-            # your code here
+            BACKEND_IP=$(aws ec2 describe-instances \
+              # --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:udapeople,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --output text
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
+            npm run build
       - run:
-          name: Deploy frontend objects
+          name: Deploy frontend objects to S3
+          working_directory: ./frontend
           command: |
-            # your code here
+            aws s3 cp ./dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
+      - persist_to_workspace:
+          root: .
+          paths:
+            - frontend/dist
       # Here's where you will add some code to rollback on failure      
                     
   deploy-backend:
@@ -289,34 +315,56 @@ jobs:
       # Checkout code from git
       # Add ssh keys with fingerprint
       # attach workspace
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["34:b8:83:88:95:73:32:a8:45:a2:fd:c0:2d:e5:95:a5"]
+      - attach_workspace:
+          at: .
       - run:
           name: Install dependencies
+          working_directory: /tmp
           command: |
-            # your code here
+            apk add --update ansible curl rsync openssh nodejs npm
+            ansible --version
+            pip install awscli
+            aws --version
       - run:
           name: Deploy backend
+          working_directory: ./.circleci/ansible
           command: |
-            # your code here
+            cat inventory
+            ansible-playbook -i inventory deploy-server.yaml -vv
       # Here's where you will add some code to rollback on failure  
 
   smoke-test:
-    docker:
-      - image: alpine:latest
+    executor: python
       # Lightweight Docker image 
     steps:
       # Checkout code from git
+      - checkout
+      - attach_workspace:
+          at: .
       - run:
           name: Install dependencies
+          working_directory: /tmp
           command: |
-            # your code here
+            apk add --update curl nodejs npm
+            pip install awscli
+            aws --version
       - run:
           name: Get backend url
+          working_directory: ./backend
           command: |
-            # your code here
+            BACKEND_IP=$(aws ec2 describe-instances \
+              # --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:udapeople,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --output text
       - run:
           name: Backend smoke test.
           command: |
-            # your code here
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo "${API_URL}"
+            curl "$BACKEND_URL/api/status"
       - run:
           name: Frontend smoke test.
           command: |
