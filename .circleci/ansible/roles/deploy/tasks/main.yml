@@ -1,6 +1,6 @@
 ---
-- name: "show remote environment"
-  shell: env
+# - name: "show remote environment"
+  # shell: env
 
 - name: install rsync on the ansible controller
   connection: local
