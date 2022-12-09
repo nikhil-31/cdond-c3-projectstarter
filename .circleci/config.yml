@@ -365,7 +365,7 @@ jobs:
       - attach_workspace:
           at: .
       - run:
-          name: Get backend url
+          name: Backend smoke test
           working_directory: ./backend
           command: |
             # BACKEND_IP=$(aws ec2 describe-instances \
@@ -377,9 +377,6 @@ jobs:
               --filters "Name=tag:udapeople,Values=backend-eafbc73" \
               --output text)
             echo "${BACKEND_IP}"
-      - run:
-          name: Backend smoke test.
-          command: |
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
             if curl "${API_URL}/api/status" | grep "ok"
@@ -451,8 +448,8 @@ workflows:
   default:
     jobs:
       # TODO - uncomment all
-      - build-frontend
-      - build-backend
+      # - build-frontend
+      # - build-backend
       # - test-frontend:
           # requires: [build-frontend]
       # - test-backend:
