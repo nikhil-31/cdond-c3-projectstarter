@@ -28,7 +28,7 @@ commands:
           when: on_fail
           command: |
             aws s3 rm s3://udapeople-<< parameters.id >> --recursive
-            aws cloudformation delete-stack --stack-name udapeople-frontend-<< parameters.id >>
+            aws cloudformation delete-stack --stack-name udapeople-front-<< parameters.id >>
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
@@ -282,6 +282,7 @@ jobs:
      # Here's where you will add some code to rollback on failure      
       - destroy-environment:
           id: ${CIRCLE_WORKFLOW_ID:0:7}
+  
   deploy-frontend:
     executor: node
     steps:
@@ -291,6 +292,7 @@ jobs:
           at: .
       - run:
           name: Install dependencies
+          working_directory: /tmp
           command: |
             # your code here
             sudo apt-get update && sudo apt-get install -yy less
@@ -299,6 +301,7 @@ jobs:
             sudo ./aws/install
       - run:
           name: Get backend url
+          working_directory: ./frontend
           command: |
             BACKEND_IP=$(aws ec2 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
@@ -391,21 +394,26 @@ jobs:
     executor: aws
     steps:
       # Checkout code from git
+      - checkout
       - run:
           name: Install dependencies
           command: |
-            # your code here
+            yum install -y tar gzip curl
+            curl -sL https://rpm.nodesource.com/setup_10.x | bash -
+            yum install -y nodejs
       - run:
           name: Update cloudfront distribution
           command: |
             # your code here
-      # Here's where you will add some code to rollback on failure  
+            aws cloudformation deploy \
+              --template-file cloudfront.yaml \
+              --stack-name udapeople-cloudfront-production \
+              --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
+              --tags project=udapeople
       - destroy-environment:
           id: ${CIRCLE_WORKFLOW_ID:0:7}
   cleanup:
-      docker:
-        # Docker image here
-        - image: alpine:latest
+      executor: aws
       steps:
         # Checkout code from git
         - run:
