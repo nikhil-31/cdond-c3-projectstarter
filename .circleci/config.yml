@@ -291,9 +291,9 @@ jobs:
           name: Get backend url
           command: |
             BACKEND_IP=$(aws ec2 describe-instances \
-              # --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters "Name=tag:udapeople,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --output text
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:udapeople,Values=backend-0716ec7" \
+              --output text)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
             npm run build
@@ -333,7 +333,7 @@ jobs:
           working_directory: ./.circleci/ansible
           command: |
             cat inventory
-            ansible-playbook -i inventory deploy-server.yaml -vv
+            ansible-playbook -i inventory deploy-backend.yml -vv
       # Here's where you will add some code to rollback on failure  
 
   smoke-test:
