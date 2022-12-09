@@ -325,7 +325,7 @@ jobs:
           at: .
       - run:
           name: Install dependencies
-          working_directory: /tmp
+          working_directory: ./.circleci/ansible
           command: |
             apk add --update ansible curl rsync openssh nodejs npm
             ansible --version
