@@ -363,6 +363,7 @@ jobs:
             apk add --update curl nodejs npm
             pip install awscliv2
             aws --version
+            alias aws='awsv2'
       - run:
           name: Get backend url
           working_directory: ./backend
