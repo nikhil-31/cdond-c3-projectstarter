@@ -82,6 +82,11 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-builder
+      - persist_to_workspace:
+          root: .
+          paths:
+            - backend/dist
+            - backend/node_modules
 
   test-frontend:
     executor: node
@@ -323,8 +328,6 @@ jobs:
           fingerprints: ["34:b8:83:88:95:73:32:a8:45:a2:fd:c0:2d:e5:95:a5"]
       - attach_workspace:
           at: .
-      - restore_cache:
-          keys: [backend-builder]
       - run:
           name: Install dependencies
           working_directory: ./.circleci/ansible
@@ -337,6 +340,7 @@ jobs:
           name: Deploy backend
           working_directory: ./.circleci/ansible
           command: |
+            # tar -C backend -czvf artifact.tar.gz .
             cat inventory
             ansible-playbook -i inventory deploy-backend.yml -vv
       # Here's where you will add some code to rollback on failure  
@@ -458,17 +462,17 @@ workflows:
           filters:
             branches:
               only: [master]
-      - configure-infrastructure:
-          requires: [deploy-infrastructure]
-      - run-migrations:
-          requires: [configure-infrastructure]
-      - deploy-frontend:
-          requires: [run-migrations]
-      - deploy-backend:
-          requires: [run-migrations]
-      - smoke-test:
-          requires: [deploy-backend, deploy-frontend]
-      - cloudfront-update:
-          requires: [smoke-test]
-      - cleanup:
-          requires: [cloudfront-update]
+      # - configure-infrastructure:
+          # requires: [deploy-infrastructure]
+      # - run-migrations:
+          # requires: [configure-infrastructure]
+      # - deploy-frontend:
+          # requires: [run-migrations]
+      # - deploy-backend:
+          # requires: [run-migrations]
+      # - smoke-test:
+          # requires: [deploy-backend, deploy-frontend]
+      # - cloudfront-update:
+          # requires: [smoke-test]
+      # - cleanup:
+          # requires: [cloudfront-update]
