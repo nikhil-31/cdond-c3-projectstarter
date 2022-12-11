@@ -322,32 +322,63 @@ jobs:
       # - destroy-environment:
           # id: ${CIRCLE_WORKFLOW_ID:0:7}    
   
-  deploy-backend:
-    executor: python
-    steps:
-      - checkout
-      - add_ssh_keys:
-          fingerprints: ["34:b8:83:88:95:73:32:a8:45:a2:fd:c0:2d:e5:95:a5"]
-      - attach_workspace:
-          at: .
-      - run:
-          name: Install dependencies
-          working_directory: ./.circleci/ansible
-          command: |
-            apk add --update ansible curl rsync openssh nodejs npm
-            ansible --version
-      - run:
-          name: Deploy backend
-          command: |
-            cd backend/
-            npm i
-            npm run build
-            cd ..
-            tar -C backend -czvf artifact.tar.gz .
+    deployer-infrastructure:
+      executor: python
+      steps:
+        - checkout
+        - add_ssh_keys:
+            fingerprints: ["34:b8:83:88:95:73:32:a8:45:a2:fd:c0:2d:e5:95:a5"]
+        - attach_workspace:
+            at: .
+        - run:
+            name: Install dependencies
+            working_directory: ./.circleci/ansible
+            command: |
+              apk add --update ansible curl rsync openssh nodejs npm
+              ansible --version
+        - run:
+            name: Deploy backend
+            command: |
+              cd backend/
+              npm i
+              npm run build
+              cd ..
+              tar -C backend -czvf artifact.tar.gz .
+              ls -lah
 
-            cd .circleci/ansible/
-            cat inventory
-            ansible-playbook -i inventory configure-server.yml
+              cd .circleci/ansible/
+              cat inventory
+              ansible-playbook -i inventory deploy-backend.yml
+        # Here's where you will add some code to rollback on failure  
+        # - destroy-environment:
+            # id: ${CIRCLE_WORKFLOW_ID:0:7}   
+
+  # deploy-backend:
+  #   executor: python
+  #   steps:
+  #     - checkout
+  #     - add_ssh_keys:
+  #         fingerprints: ["34:b8:83:88:95:73:32:a8:45:a2:fd:c0:2d:e5:95:a5"]
+  #     - attach_workspace:
+  #         at: .
+  #     - run:
+  #         name: Install dependencies
+  #         working_directory: ./.circleci/ansible
+  #         command: |
+  #           apk add --update ansible curl rsync openssh nodejs npm
+  #           ansible --version
+  #     - run:
+  #         name: Deploy backend
+  #         command: |
+  #           cd backend/
+  #           npm i
+  #           npm run build
+  #           cd ..
+  #           tar -C backend -czvf artifact.tar.gz .
+
+  #           cd .circleci/ansible/
+  #           cat inventory
+  #           ansible-playbook -i inventory configure-server.yml
       # Here's where you will add some code to rollback on failure  
       # - destroy-environment:
           # id: ${CIRCLE_WORKFLOW_ID:0:7}
@@ -473,7 +504,8 @@ workflows:
           # requires: [configure-infrastructure]
       # - deploy-frontend:
           # requires: [run-migrations]
-      - deploy-backend
+      - deployer-infrastructure
+      # - deploy-backend
           # requires: [run-migrations]
       # - smoke-test:
           # requires: [deploy-backend, deploy-frontend]
