@@ -347,7 +347,7 @@ jobs:
 
             cd .circleci/ansible/
             cat inventory
-            ansible-playbook -i inventory deploy-backend.yml
+            ansible-playbook -i inventory configure-server.yml
       # Here's where you will add some code to rollback on failure  
       # - destroy-environment:
           # id: ${CIRCLE_WORKFLOW_ID:0:7}
@@ -462,21 +462,21 @@ workflows:
           # requires: [build-backend]
       # - scan-frontend:
           # requires: [build-frontend]
-      - deploy-infrastructure:
+      # - deploy-infrastructure:
           # requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-          filters:
-            branches:
-              only: [master]
-      - configure-infrastructure:
-          requires: [deploy-infrastructure]
-      - run-migrations:
-          requires: [configure-infrastructure]
-      - deploy-frontend:
-          requires: [run-migrations]
-      - deploy-backend:
-          requires: [run-migrations]
-      - smoke-test:
-          requires: [deploy-backend, deploy-frontend]
+          # filters:
+            # branches:
+              # only: [master]
+      # - configure-infrastructure:
+          # requires: [deploy-infrastructure]
+      # - run-migrations:
+          # requires: [configure-infrastructure]
+      # - deploy-frontend:
+          # requires: [run-migrations]
+      - deploy-backend
+          # requires: [run-migrations]
+      # - smoke-test:
+          # requires: [deploy-backend, deploy-frontend]
       # - cloudfront-update:
           # requires: [smoke-test]
       # - cleanup:
