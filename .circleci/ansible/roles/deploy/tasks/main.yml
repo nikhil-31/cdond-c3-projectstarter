@@ -1,19 +1,7 @@
 ---
-- name: "update apt packages"
-  become: true
-  apt:
-    update_cache: true
-
-- name: "upgrade packages"
-  become: true
-  apt:
-    upgrade: yes
-
-- name: "remove dependencies that are no longer required"
-  become: true
-  apt:
-    autoremove: true
-
+# # - name: Show Env variables
+# #   shell: |
+# #     env
 - name: "install dependencies"
   become: true
   apt: 
@@ -21,55 +9,36 @@
     state: "latest"
     update_cache: yes
 
-- name: "install pm2"
+- name: Copy compiled files
   become: true
-  npm:
-    name: pm2
-    global: yes
-    production: yes
-    state: present
+  unarchive:
+    # src: ./artifact.tar.gz÷
+    # src: /Users/nikhilb/udacity/cicd/cdond-c3-projectstarter/backend
+    src: /home/circleci/project/artifact.tar.gz
+    dest: /home/ubuntu/
 
-# ---
-# # - name: Show Env variables
-# #   shell: |
-# #     env
-# - name: "install dependencies"
-#   become: true
-#   apt: 
-#     name: ["nodejs", "npm"]
-#     state: "latest"
-#     update_cache: yes
+- name: Stop and delete already running server
+  ignore_errors: true
+  shell: |
+    pm2 kill
 
-# - name: Copy compiled files
-#   become: true
-#   unarchive:
-#     # src: ./artifact.tar.gz÷
-#     # src: /Users/nikhilb/udacity/cicd/cdond-c3-projectstarter/backend
-#     src: /home/circleci/project/artifact.tar.gz
-#     dest: /home/ubuntu/
-
-# - name: Stop and delete already running server
-#   ignore_errors: true
-#   shell: |
-#     pm2 kill
-
-# - name: Start server
-#   become: true
-#   shell: |
-#     cd /home/ubuntu/backend
-#     pm2 start npm --name backend -- start
-#     pm2 ls
-#   environment:
-#     ENVIRONMENT: production
-#     TYPEORM_CONNECTION: "postgres" 
-#     TYPEORM_ENTITIES: "./src/modules/domain/**/*.entity.ts"
-#     TYPEORM_HOST: database-1.cikwviu4ipxa.us-east-1.rds.amazonaws.com
-#     TYPEORM_PORT: "5432"
-#     TYPEORM_USERNAME: postgres
-#     TYPEORM_PASSWORD: 48T6V^ziBMQxhp8
-#     TYPEORM_DATABASE: postgres
-#     TYPEORM_MIGRATIONS: "./src/migrations/*.ts"
-#     TYPEORM_MIGRATIONS_DIR: "./src/migrations" 
+- name: Start server
+  become: true
+  shell: |
+    cd /home/ubuntu/backend
+    pm2 start npm --name backend -- start
+    pm2 ls
+  environment:
+    ENVIRONMENT: production
+    TYPEORM_CONNECTION: "postgres" 
+    TYPEORM_ENTITIES: "./src/modules/domain/**/*.entity.ts"
+    TYPEORM_HOST: database-1.cikwviu4ipxa.us-east-1.rds.amazonaws.com
+    TYPEORM_PORT: "5432"
+    TYPEORM_USERNAME: postgres
+    TYPEORM_PASSWORD: 48T6V^ziBMQxhp8
+    TYPEORM_DATABASE: postgres
+    TYPEORM_MIGRATIONS: "./src/migrations/*.ts"
+    TYPEORM_MIGRATIONS_DIR: "./src/migrations" 
 
 # # # - name: "show remote environment"
 #   # shell: env
