@@ -4,10 +4,10 @@
 #     env
 
 - name: Copy compiled files
-  synchronize:
+  unarchive:
     # src: ./artifact.tar.gz÷
     # src: /Users/nikhilb/udacity/cicd/cdond-c3-projectstarter/backend
-    src: /home/circleci/project/backend
+    src: /home/circleci/project/artifact.tar.gz
     dest: /home/ubuntu/
 
 - name: Stop and delete already running server
