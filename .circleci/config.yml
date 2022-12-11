@@ -336,8 +336,6 @@ jobs:
           command: |
             apk add --update ansible curl rsync openssh nodejs npm
             ansible --version
-            pip install awscli
-            aws --version
       - run:
           name: Deploy backend
           command: |
