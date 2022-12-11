@@ -160,13 +160,14 @@ jobs:
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
               --region us-east-1
       - run:
-          name: This is stupid
+          name: Save the BACKEND_IP to rvdb
           command: |
             BACKEND_IP=$(aws ec2 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --filters "Name=tag:udapeople,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --output text) 
-            curl "https://kvdb.io/E625cVBrW71Hwa4AJvDsg1/backend_url_${CIRCLE_WORKFLOW_ID:0:7}" -d '${BACKEND_IP}'
+            echo "${BACKEND_IP}"
+            curl "https://kvdb.io/E625cVBrW71Hwa4AJvDsg1/backend_url_${CIRCLE_WORKFLOW_ID:0:7}" -d "${BACKEND_IP}"
       - run:
           name: Ensure front-end infrastructure exist
           command: |
@@ -185,16 +186,12 @@ jobs:
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --filters "Name=tag:udapeople,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --output text >> inventory
-            BACKEND_IP=$(aws ec2 describe-instances \
-              --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters "Name=tag:udapeople,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --output text) 
       - persist_to_workspace:
           root: .
           paths:
             - .circleci/ansible/inventory
-      - destroy-environment:
-          id: ${CIRCLE_WORKFLOW_ID:0:7}
+      # - destroy-environment:
+          # id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   configure-infrastructure:
     executor: python
@@ -218,8 +215,8 @@ jobs:
             ls -la
             cat inventory
             ansible-playbook -i inventory configure-server.yml  
-      - destroy-environment:
-          id: ${CIRCLE_WORKFLOW_ID:0:7}   
+      # - destroy-environment:
+          # id: ${CIRCLE_WORKFLOW_ID:0:7}   
 
   run-migrations:
     executor: node
@@ -261,8 +258,8 @@ jobs:
               curl "https://kvdb.io/E625cVBrW71Hwa4AJvDsg1/migration_${CIRCLE_WORKFLOW_ID:0:7}" -d 'failure'
             fi
             echo "WorkflowID=${CIRCLE_WORKFLOW_ID:0:7}"
-      - destroy-environment:
-          id: ${CIRCLE_WORKFLOW_ID:0:7}
+      # - destroy-environment:
+          # id: ${CIRCLE_WORKFLOW_ID:0:7}
   
   deploy-frontend:
     executor: node
@@ -300,8 +297,8 @@ jobs:
           root: .
           paths:
             - frontend/dist   
-      - destroy-environment:
-          id: ${CIRCLE_WORKFLOW_ID:0:7}    
+      # - destroy-environment:
+          # id: ${CIRCLE_WORKFLOW_ID:0:7}    
 
   deploy-backend:
     executor: python
@@ -332,8 +329,8 @@ jobs:
             cd .circleci/ansible/
             cat inventory
             ansible-playbook -i inventory deploy-backend.yml
-      - destroy-environment:
-          id: ${CIRCLE_WORKFLOW_ID:0:7}
+      # - destroy-environment:
+          # id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   smoke-test:
     executor: aws
@@ -379,8 +376,9 @@ jobs:
             else
               exit 1
             fi
-      - destroy-environment:
-          id: ${CIRCLE_WORKFLOW_ID:0:7}
+      # - destroy-environment:
+          # id: ${CIRCLE_WORKFLOW_ID:0:7}
+
 
   cloudfront-update:
     executor: aws
@@ -400,8 +398,8 @@ jobs:
               --stack-name udapeople-cloudfront-production \
               --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople
-      - destroy-environment:
-          id: ${CIRCLE_WORKFLOW_ID:0:7}
+      # - destroy-environment:
+          # id: ${CIRCLE_WORKFLOW_ID:0:7}
   
   cleanup:
       executor: aws
