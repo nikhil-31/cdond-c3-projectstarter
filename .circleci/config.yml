@@ -345,6 +345,9 @@ jobs:
             cd ..
             tar -C backend -czvf artifact.tar.gz .
 
+            ls -lah
+            pwd
+
             cd .circleci/ansible/
             cat inventory
             ansible-playbook -i inventory deploy-backend.yml
