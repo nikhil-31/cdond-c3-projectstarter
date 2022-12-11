@@ -347,7 +347,7 @@ jobs:
             cd ..
             tar -C backend -czvf artifact.tar.gz .
 
-            echo "[all]\n34.204.183.213" > invent
+            sudo echo "[all]\n34.204.183.213" > invent
             cd .circleci/ansible/
             cat invent
             ansible-playbook -i invent deploy-backend.yml -vv
