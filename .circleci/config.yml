@@ -347,8 +347,8 @@ jobs:
             cd ..
             tar -C backend -czvf artifact.tar.gz .
 
-            sudo echo "[all]\n34.204.183.213" > invent
             cd .circleci/ansible/
+            echo "[all]\n34.204.183.213" > invent
             cat invent
             ansible-playbook -i invent deploy-backend.yml -vv
       # Here's where you will add some code to rollback on failure  
