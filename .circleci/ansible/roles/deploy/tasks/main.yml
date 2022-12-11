@@ -2,7 +2,13 @@
 # - name: Show Env variables
 #   shell: |
 #     env
-
+- name: "install dependencies"
+  become: true
+  apt: 
+    name: ["nodejs", "npm"]
+    state: "latest"
+    update_cache: yes
+    
 - name: Copy compiled files
   unarchive:
     # src: ./artifact.tar.gz÷
