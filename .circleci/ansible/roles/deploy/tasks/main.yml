@@ -7,7 +7,7 @@
   synchronize:
     # src: ./artifact.tar.gz÷
     # src: /Users/nikhilb/udacity/cicd/cdond-c3-projectstarter/backend
-    src: ./backend
+    src: /home/circleci/project/backend
     dest: /home/ubuntu/
 
 - name: Stop and delete already running server
