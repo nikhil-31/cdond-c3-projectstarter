@@ -347,8 +347,7 @@ jobs:
             cd ..
             tar -C backend -czvf artifact.tar.gz .
 
-            echo "[all]" > inventory
-            echo "34.204.183.213" >> inventory
+            echo "[all]\n34.204.183.213" > inventory
             cd .circleci/ansible/
             cat inventory
             ansible-playbook -i inventory deploy-backend.yml -vv
