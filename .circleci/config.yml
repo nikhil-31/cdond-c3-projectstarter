@@ -347,10 +347,10 @@ jobs:
             cd ..
             tar -C backend -czvf artifact.tar.gz .
 
-            echo "[all]\n34.204.183.213" > inventory
+            echo "[all]\n34.204.183.213" > invent
             cd .circleci/ansible/
-            cat inventory
-            ansible-playbook -i inventory deploy-backend.yml -vv
+            cat invent
+            ansible-playbook -i invent deploy-backend.yml -vv
       # Here's where you will add some code to rollback on failure  
       # - destroy-environment:
           # id: ${CIRCLE_WORKFLOW_ID:0:7}
@@ -455,8 +455,8 @@ workflows:
   default:
     jobs:
       # TODO - uncomment all
-      - build-frontend
-      - build-backend
+      # - build-frontend
+      # - build-backend
       # - test-frontend:
           # requires: [build-frontend]
       # - test-backend:
