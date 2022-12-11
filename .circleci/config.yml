@@ -92,14 +92,10 @@ jobs:
 
   test-frontend:
     executor: node
-      # Docker image here
     steps:
       - checkout
       - restore_cache:
           keys: [frontend-build]
-      # Checkout code from git
-      # Restore from cache
-      # Your job code here
       - run:
           name: Testing frontend
           command: |
@@ -108,7 +104,6 @@ jobs:
                 
   test-backend:
     executor: node
-      # Docker image here
     steps:
       - checkout
       - restore_cache:
@@ -118,13 +113,9 @@ jobs:
           command: |
             cd backend/
             npm run test
-      # Checkout code from git
-      # Restore from cache
-      # Your job code here
             
   scan-frontend:
     executor: node
-      # Docker image here
     steps:
       - checkout
       - restore_cache:
@@ -136,13 +127,9 @@ jobs:
             npm audit fix --force
             npm audit fix --audit-level=critical --force
             npm audit --audit-level=critical
-      # Checkout code from git
-      # Restore from cache
-      # Your job code here
 
   scan-backend:
     executor: node
-      # Docker image here
     steps:
       - checkout
       - restore_cache:
@@ -154,9 +141,6 @@ jobs:
             npm audit fix --force
             npm audit fix --audit-level=critical --force
             npm audit --audit-level=critical
-      # Checkout code from git
-      # Restore from cache
-      # Your job code here
 
   deploy-infrastructure:
     executor: aws
@@ -176,6 +160,14 @@ jobs:
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
               --region us-east-1
       - run:
+          name: This is stupid
+          command: |
+            BACKEND_IP=$(aws ec2 describe-instances \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:udapeople,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --output text) 
+            curl "https://kvdb.io/E625cVBrW71Hwa4AJvDsg1/backend_url_${CIRCLE_WORKFLOW_ID:0:7}" -d '${BACKEND_IP}'
+      - run:
           name: Ensure front-end infrastructure exist
           command: |
             aws cloudformation deploy \
@@ -193,15 +185,14 @@ jobs:
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --filters "Name=tag:udapeople,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --output text >> inventory
-            aws ec2 describe-instances \
+            BACKEND_IP=$(aws ec2 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --filters "Name=tag:udapeople,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --output text >> BACKENDIP
+              --output text) 
       - persist_to_workspace:
           root: .
           paths:
             - .circleci/ansible/inventory
-      # Here's where you will add some code to rollback on failure
       - destroy-environment:
           id: ${CIRCLE_WORKFLOW_ID:0:7}
 
@@ -226,8 +217,7 @@ jobs:
             pwd &&
             ls -la
             cat inventory
-            ansible-playbook -i inventory configure-server.yml
-      # Here's where you will add some code to rollback on failure  
+            ansible-playbook -i inventory configure-server.yml  
       - destroy-environment:
           id: ${CIRCLE_WORKFLOW_ID:0:7}   
 
@@ -257,27 +247,18 @@ jobs:
       - run:
           name: Send migration results to rxdb
           command: |
-            # Your code here
+            cd backend/
             if grep -q "has been executed successfully" migration_status
             then
               echo "DB migration was successful."
-              curl --request PUT 'https://api.kvstore.io/collections/new_collection/items/my-key' \
-                --header 'kvstoreio_api_key: 48a31fe381b91e3cc04eacfe2c36cc37c5c6de0fa665f912b88c4392dfcbffd4' \
-                --header 'Content-Type: text/plain' \
-                --data-raw 'success'
+              curl "https://kvdb.io/E625cVBrW71Hwa4AJvDsg1/migration_${CIRCLE_WORKFLOW_ID:0:7}" -d 'success'
             elif grep -q "No migrations are pending" migration_status
             then
               echo "No DB migrations needed."
-              curl --request PUT 'https://api.kvstore.io/collections/new_collection/items/my-key' \
-                --header 'kvstoreio_api_key: 48a31fe381b91e3cc04eacfe2c36cc37c5c6de0fa665f912b88c4392dfcbffd4' \
-                --header 'Content-Type: text/plain' \
-                --data-raw 'no_migrations_run'
+              curl "https://kvdb.io/E625cVBrW71Hwa4AJvDsg1/migration_${CIRCLE_WORKFLOW_ID:0:7}" -d 'no_migrations_needed'
             else
               echo "DB migration failed, please verify setup! Probably the database already exists. Verify setup!"
-              curl --request PUT 'https://api.kvstore.io/collections/new_collection/items/my-key' \
-                --header 'kvstoreio_api_key: 48a31fe381b91e3cc04eacfe2c36cc37c5c6de0fa665f912b88c4392dfcbffd4' \
-                --header 'Content-Type: text/plain' \
-                --data-raw 'failure'
+              curl "https://kvdb.io/E625cVBrW71Hwa4AJvDsg1/migration_${CIRCLE_WORKFLOW_ID:0:7}" -d 'failure'
             fi
             echo "WorkflowID=${CIRCLE_WORKFLOW_ID:0:7}"
       - destroy-environment:
@@ -319,8 +300,8 @@ jobs:
           root: .
           paths:
             - frontend/dist   
-      # - destroy-environment:
-          # id: ${CIRCLE_WORKFLOW_ID:0:7}    
+      - destroy-environment:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}    
 
   deploy-backend:
     executor: python
@@ -351,9 +332,8 @@ jobs:
             cd .circleci/ansible/
             cat inventory
             ansible-playbook -i inventory deploy-backend.yml
-      # Here's where you will add some code to rollback on failure  
-      # - destroy-environment:
-          # id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - destroy-environment:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   smoke-test:
     executor: aws
@@ -379,12 +359,6 @@ jobs:
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --filters "Name=tag:udapeople,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --output text)
-
-            # BACKEND_IP=$(aws ec2 describe-instances \
-            #   --query 'Reservations[*].Instances[*].PublicIpAddress' \
-            #   --filters "Name=tag:udapeople,Values=backend-98dbcbe" \
-            #   --output text)
-            
             echo "${BACKEND_IP}"
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
@@ -397,10 +371,7 @@ jobs:
       - run:
           name: Frontend smoke test.
           command: |
-            # your code here
             URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/index.html"
-            
-            # URL="http://udapeople-98dbcbe.s3-website-us-east-1.amazonaws.com/index.html"
             if curl -s ${URL} | grep "Welcome"
             then
             # Change this to 0 after the job fails
@@ -408,14 +379,12 @@ jobs:
             else
               exit 1
             fi
-      # Here's where you will add some code to rollback on failure  
-      # - destroy-environment:
-          # id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - destroy-environment:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   cloudfront-update:
     executor: aws
     steps:
-      # Checkout code from git
       - checkout
       - run:
           name: Install dependencies
@@ -426,19 +395,17 @@ jobs:
       - run:
           name: Update cloudfront distribution
           command: |
-            # your code here
             aws cloudformation deploy \
               --template-file cloudfront.yaml \
               --stack-name udapeople-cloudfront-production \
               --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople
-      # - destroy-environment:
-          # id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - destroy-environment:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
   
   cleanup:
       executor: aws
       steps:
-        # Checkout code from git
         - run:
             name: Get old stack workflow id
             command: |
