@@ -425,7 +425,7 @@ jobs:
               CurrentWorkflowID="${CIRCLE_WORKFLOW_ID:0:7}"
               echo "$OldWorkflowID"
               echo "Current workflow id $CurrentWorkflowID"
-              if ["$CurrentWorkflowID" != "$OldWorkflowID"];
+              if [ "$CurrentWorkflowID" != "$OldWorkflowID" ];
               then
                 echo "$OldWorkflowID!=$CurrentWorkflowID => will delete old version"
 
