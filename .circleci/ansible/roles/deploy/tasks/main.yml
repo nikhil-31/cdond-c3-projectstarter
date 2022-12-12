@@ -1,15 +1,4 @@
 ---
-# - name: Show Env variables
-#   shell: |
-#     env
-
-# - name: "install dependencies"
-#   become: true
-#   apt: 
-#     name: ["nodejs", "npm"]
-#     state: "latest"
-#     update_cache: yes
-
 - name: Copy compiled files
   become: true
   unarchive:
@@ -27,15 +16,14 @@
   shell: |
     cd /home/ubuntu/backend
     pm2 start npm --name backend -- start
-    pm2 ls
   environment:
     ENVIRONMENT: production
-    TYPEORM_CONNECTION: "{{ lookup('env', 'TYPEORM_CONNECTION') }}"
-    TYPEORM_MIGRATIONS_DIR: "./migrations"
-    TYPEORM_MIGRATIONS: "./migrations/*.js"
-    TYPEORM_ENTITIES: "./modules/domain/**/*.entity.js"
-    TYPEORM_HOST: "{{ lookup('env', 'TYPEORM_HOST') }}"
-    TYPEORM_PORT: "{{ lookup('env', 'TYPEORM_PORT') }}"
-    TYPEORM_USERNAME: "{{ lookup('env', 'TYPEORM_USERNAME') }}"
-    TYPEORM_PASSWORD: "{{ lookup('env', 'TYPEORM_PASSWORD') }}"
-    TYPEORM_DATABASE: "{{ lookup('env', 'TYPEORM_DATABASE') }}"
+    TYPEORM_CONNECTION: "postgres" 
+    TYPEORM_ENTITIES: "./src/modules/domain/**/*.entity.ts"
+    TYPEORM_HOST: database-1.cikwviu4ipxa.us-east-1.rds.amazonaws.com
+    TYPEORM_PORT: "5432"
+    TYPEORM_USERNAME: postgres
+    TYPEORM_PASSWORD: 48T6V^ziBMQxhp8
+    TYPEORM_DATABASE: postgres
+    TYPEORM_MIGRATIONS: "./src/migrations/*.ts"
+    TYPEORM_MIGRATIONS_DIR: "./src/migrations" 
