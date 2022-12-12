@@ -216,7 +216,7 @@ jobs:
             pwd &&
             ls -la
             cat inventory
-            ansible-playbook -i inventory configure-server.yml  
+            ansible-playbook -i inventory configure-server.yml -vvv
       # - destroy-environment:
           # id: ${CIRCLE_WORKFLOW_ID:0:7}   
 
@@ -332,7 +332,7 @@ jobs:
 
             cd .circleci/ansible/
             cat inventory
-            ansible-playbook -i inventory deploy-backend.yml
+            ansible-playbook -i inventory deploy-backend.yml -vvv
       # - destroy-environment:
           # id: ${CIRCLE_WORKFLOW_ID:0:7}
       # - revert-migrations:
