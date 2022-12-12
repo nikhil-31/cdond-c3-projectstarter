@@ -424,9 +424,8 @@ jobs:
 
               OldWorkflowID=$(curl "https://kvdb.io/E625cVBrW71Hwa4AJvDsg1/old_workflow")
               echo "Old workflow id $OldWorkflowID"
-              CurrentWorkflowID=("${CIRCLE_WORKFLOW_ID:0:7}")
-              echo "Current workflow id $CurrentWorkflowID"
-              if ["$CurrentWorkflowID" != "$OldWorkflowID"] 
+              echo "Current workflow id ${CIRCLE_WORKFLOW_ID:0:7}"
+              if ["${CIRCLE_WORKFLOW_ID:0:7}" != "$OldWorkflowID"] 
               then
                 echo "$OldWorkflowID!=$CurrentWorkflowID => will delete old version"
 
