@@ -339,29 +339,34 @@ jobs:
           # id: ${CIRCLE_WORKFLOW_ID:0:7}
   
   smoke-test:
-    executor: aws
+    executor: python
     steps:
       - checkout
       - run:
           name: Install dependencies
           working_directory: /tmp
           command: |
-            yum install -y tar gzip
-            yum install curl
-            # apk add --update curl 
-            # pip install awscliv2
-            # alias aws='awsv2'
-            # aws --version
+            # yum install -y tar gzip
+            # yum install curl
+            
+            apk add --update curl nodejs npm
+            pip install awscliv2
+            alias aws='awsv2'
+            aws --version
       - attach_workspace:
           at: .
       - run:
           name: Backend smoke test
           working_directory: ./backend
           command: |
-            BACKEND_IP=$(aws ec2 describe-instances \
-              --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters "Name=tag:udapeople,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --output text)
+            # BACKEND_IP=$(aws ec2 describe-instances \
+            #   --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            #   --filters "Name=tag:udapeople,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+            #   --output text)
+            
+            # BACKEND_IP=$(curl "https://kvdb.io/E625cVBrW71Hwa4AJvDsg1/backend_url_${CIRCLE_WORKFLOW_ID:0:7}")
+
+            BACKEND_IP=$(curl "https://kvdb.io/E625cVBrW71Hwa4AJvDsg1/backend_url_f6c800a")
             echo "${BACKEND_IP}"
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
@@ -374,7 +379,9 @@ jobs:
       - run:
           name: Frontend smoke test.
           command: |
-            URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/index.html"
+            # URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/index.html"
+
+            URL="http://udapeople-f6c800a.s3-website-us-east-1.amazonaws.com/index.html"
             if curl -s ${URL} | grep "Welcome"
             then
             # Change this to 0 after the job fails
@@ -463,22 +470,22 @@ workflows:
       #     requires: [build-backend]
       # - scan-frontend:
       #     requires: [build-frontend]
-      - deploy-infrastructure:
-      #     requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-          filters:
-            branches:
-              only: [master]
-      - configure-infrastructure:
-          requires: [deploy-infrastructure]
-      - run-migrations:
-          requires: [configure-infrastructure]
-      - deploy-frontend:
-          requires: [run-migrations]
-      - deploy-backend:
-          requires: [run-migrations]
-      - smoke-test:
-          requires: [deploy-backend, deploy-frontend]
-      - cloudfront-update:
-          requires: [smoke-test]
-      - cleanup:
-          requires: [cloudfront-update]
+      # - deploy-infrastructure:
+      # #     requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+      #     filters:
+      #       branches:
+      #         only: [master]
+      # - configure-infrastructure:
+      #     requires: [deploy-infrastructure]
+      # - run-migrations:
+      #     requires: [configure-infrastructure]
+      # - deploy-frontend:
+      #     requires: [run-migrations]
+      # - deploy-backend:
+      #     requires: [run-migrations]
+      - smoke-test
+          # requires: [deploy-backend, deploy-frontend]
+      # - cloudfront-update:
+      #     requires: [smoke-test]
+      # - cleanup:
+      #     requires: [cloudfront-update]
