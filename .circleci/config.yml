@@ -192,8 +192,8 @@ jobs:
           root: .
           paths:
             - .circleci/ansible/inventory
-      # - destroy-environment:
-          # id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - destroy-environment:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   configure-infrastructure:
     executor: python
@@ -217,8 +217,8 @@ jobs:
             ls -la
             cat inventory
             ansible-playbook -i inventory configure-server.yml -vvv
-      # - destroy-environment:
-          # id: ${CIRCLE_WORKFLOW_ID:0:7}   
+      - destroy-environment:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}   
 
   run-migrations:
     executor: node
@@ -260,8 +260,8 @@ jobs:
               curl "https://kvdb.io/E625cVBrW71Hwa4AJvDsg1/migration_${CIRCLE_WORKFLOW_ID:0:7}" -d 'failure'
             fi
             echo "WorkflowID=${CIRCLE_WORKFLOW_ID:0:7}"
-      # - destroy-environment:
-          # id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - destroy-environment:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
   
   deploy-frontend:
     executor: node
@@ -299,10 +299,10 @@ jobs:
           root: .
           paths:
             - frontend/dist   
-      # - destroy-environment:
-          # id: ${CIRCLE_WORKFLOW_ID:0:7}    
-      # - revert-migrations:
-          # id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - destroy-environment:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}    
+      - revert-migrations:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   deploy-backend:
     executor: python
@@ -333,10 +333,10 @@ jobs:
             cd .circleci/ansible/
             cat inventory
             ansible-playbook -i inventory deploy-backend.yml -vvv
-      # - destroy-environment:
-          # id: ${CIRCLE_WORKFLOW_ID:0:7}
-      # - revert-migrations:
-          # id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - destroy-environment:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - revert-migrations:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
   
   smoke-test:
     executor: python
@@ -356,12 +356,7 @@ jobs:
       - run:
           name: Backend smoke test
           working_directory: ./backend
-          command: |
-            # BACKEND_IP=$(aws ec2 describe-instances \
-            #   --query 'Reservations[*].Instances[*].PublicIpAddress' \
-            #   --filters "Name=tag:udapeople,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-            #   --output text)
-            
+          command: |            
             BACKEND_IP=$(curl "https://kvdb.io/E625cVBrW71Hwa4AJvDsg1/backend_url_${CIRCLE_WORKFLOW_ID:0:7}")
             echo "${BACKEND_IP}"
             export API_URL="http://${BACKEND_IP}:3030"
@@ -379,7 +374,7 @@ jobs:
             if curl -s ${URL} | grep "Welcome"
             then
             # Change this to 0 after the job fails
-              exit 1
+              exit 0
             else
               exit 1
             fi
