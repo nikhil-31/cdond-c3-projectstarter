@@ -350,9 +350,7 @@ jobs:
             # yum install curl
             
             apk add --update curl nodejs npm
-            pip install awscliv2
-            alias aws='awsv2'
-            aws --version
+            pip install awscli
       - attach_workspace:
           at: .
       - run:
