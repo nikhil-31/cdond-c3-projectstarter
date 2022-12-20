@@ -378,10 +378,10 @@ jobs:
             else
               exit 1
             fi
-      # - destroy-environment:
-          # id: ${CIRCLE_WORKFLOW_ID:0:7}
-      # - revert-migrations:
-          # id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - destroy-environment:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - revert-migrations:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   cloudfront-update:
     executor: aws
@@ -402,10 +402,10 @@ jobs:
               --stack-name udapeople-cloudfront-production-${CIRCLE_WORKFLOW_ID:0:7} \
               --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople
-      # - destroy-environment:
-          # id: ${CIRCLE_WORKFLOW_ID:0:7}
-      # - revert-migrations:
-          # id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - destroy-environment:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - revert-migrations:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   cleanup:
       executor: aws
