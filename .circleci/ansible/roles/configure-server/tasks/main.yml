@@ -1,4 +1,9 @@
 ---
+# - name: "show env variables"
+#   become: true
+#   shell:
+#     env
+
 - name: "update apt packages"
   become: true
   apt:
