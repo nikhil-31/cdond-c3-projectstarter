@@ -241,6 +241,7 @@ jobs:
           name: Run migrations
           command: |
             cd backend/
+            npm run build
             npm run migrations > migration_status
             cat migration_status
       - run:
