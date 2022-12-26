@@ -16,14 +16,3 @@
   shell: |
     cd /home/ubuntu/backend
     pm2 start npm --name backend -- start
-  # environment:
-  #   ENVIRONMENT: production
-  #   TYPEORM_CONNECTION: "postgres" 
-  #   TYPEORM_ENTITIES: "./src/modules/domain/**/*.entity.ts"
-  #   TYPEORM_HOST: database-1.cikwviu4ipxa.us-east-1.rds.amazonaws.com
-  #   TYPEORM_PORT: "5432"
-  #   TYPEORM_USERNAME: postgres
-  #   TYPEORM_PASSWORD: 48T6V^ziBMQxhp8
-  #   TYPEORM_DATABASE: postgres
-  #   TYPEORM_MIGRATIONS: "./src/migrations/*.ts"
-  #   TYPEORM_MIGRATIONS_DIR: "./src/migrations" 
